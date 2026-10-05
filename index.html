@@ -3,221 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal Cek Tabungan & SPP Siswa | Terintegrasi Firebase</title>
-  
-  <!-- Tailwind CSS via CDN -->
+  <title>Cek Tabungan & SPP Siswa</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Lucide Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@latest"></script>
-  
+
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { font-family: 'Inter', sans-serif; }
+
+    /* Print: hanya cetak area #printArea */
     @media print {
+      body * { visibility: hidden; }
+      #printArea, #printArea * { visibility: visible; }
+      #printArea {
+        position: absolute;
+        left: 0; top: 0; width: 100%;
+        padding: 20px;
+        color: #000 !important;
+        background: #fff !important;
+      }
       .no-print { display: none !important; }
-      .print-only { display: block !important; }
-      body { background: white !important; color: black !important; }
+      #printArea table { width: 100%; border-collapse: collapse; }
+      #printArea th, #printArea td {
+        border: 1px solid #ccc;
+        padding: 6px 8px;
+        font-size: 12px;
+        color: #000 !important;
+      }
+      #printArea .badge-print {
+        display: inline-block;
+        padding: 2px 8px;
+        border: 1px solid #000;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: bold;
+      }
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-50 text-slate-800 min-h-screen">
 
-  <!-- TOP NAVBAR -->
-  <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 no-print">
-    <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
-          <i data-lucide="graduation-cap" class="w-6 h-6"></i>
-        </div>
-        <div>
-          <h1 class="text-base font-bold text-white leading-tight">Portal Orang Tua & Siswa</h1>
-          <p class="text-xs text-slate-400">Buku Tabungan & Cek SPP Sekolah</p>
-        </div>
-      </div>
+  <!-- ================= HALAMAN 1: LOGIN / PENCARIAN ================= -->
+  <div id="pageSearch" class="min-h-screen flex flex-col">
 
-      <!-- Auth State / Connection Pill -->
-      <div class="flex items-center space-x-3">
-        <div id="authStatusPill" class="hidden sm:flex items-center px-3 py-1 rounded-full text-xs font-medium bg-slate-800 border border-slate-700 text-slate-300">
-          <span class="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse"></span>
-          <span id="authStatusText">Belum Terhubung</span>
+    <!-- Header minimal -->
+    <header class="border-b border-slate-200 bg-white no-print">
+      <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+            <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+          </div>
+          <span class="font-bold text-sm">Portal Tabungan & SPP</span>
         </div>
-        <button id="btnGoogleAuth" onclick="handleGoogleAuth()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white flex items-center space-x-1.5 transition shadow-sm">
-          <i data-lucide="log-in" class="w-4 h-4"></i>
+        <button id="btnGoogleAuth" onclick="handleGoogleAuth()"
+          class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1.5 transition">
+          <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
           <span id="btnAuthText">Masuk Google</span>
         </button>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <!-- MAIN CONTAINER -->
-  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 flex-1 w-full">
-    
-    <!-- HERO TITLE -->
-    <div class="text-center max-w-2xl mx-auto mb-8 no-print">
-      <span class="text-xs uppercase tracking-widest font-bold text-blue-400 mb-2 inline-flex items-center space-x-1">
-        <i data-lucide="cloud-check" class="w-3.5 h-3.5 mr-1"></i>
-        <span>Terhubung ke Firebase Cloud Firestore</span>
-      </span>
-      <h2 class="text-2xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
-        Cek Tabungan & Status SPP Anak Anda
-      </h2>
-      <p class="text-slate-400 text-sm sm:text-base">
-        Silakan masukkan Nama Siswa dan Nomor Induk Siswa (NIS) untuk mengambil data langsung secara sinkron dari database kas sekolah.
-      </p>
-    </div>
+    <!-- Konten utama pencarian -->
+    <main class="flex-1 flex items-center justify-center px-4 py-10">
+      <div class="w-full max-w-md">
 
-    <!-- SEARCH FORM CARD -->
-    <div class="max-w-xl mx-auto bg-slate-800/90 border border-slate-700/80 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl mb-8 no-print">
-      <form id="searchForm" onsubmit="handleSearch(event)" class="space-y-4">
-        <div>
-          <label for="namaInput" class="block text-xs font-semibold uppercase text-slate-300 mb-1.5">Nama Siswa (atau nama panggilan)</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <i data-lucide="user" class="w-4 h-4"></i>
-            </div>
-            <input 
-              type="text" 
-              id="namaInput" 
-              placeholder="Contoh: Muhammad Rizky" 
-              class="w-full bg-slate-900/90 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-slate-500"
-            />
-          </div>
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-extrabold text-slate-900">Cek Tabungan & SPP</h1>
+          <p class="text-slate-500 text-sm mt-1">Masukkan NIS untuk melihat data siswa</p>
         </div>
 
-        <div>
-          <label for="nisInput" class="block text-xs font-semibold uppercase text-slate-300 mb-1.5">Nomor Induk Siswa (NIS)</label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-              <i data-lucide="credit-card" class="w-4 h-4"></i>
+        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          <form id="searchForm" onsubmit="handleSearch(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">Nama Siswa (opsional)</label>
+              <input type="text" id="namaInput" placeholder="Contoh: Muhammad Rizky"
+                class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
             </div>
-            <input 
-              type="text" 
-              id="nisInput" 
-              placeholder="Contoh: 20260101" 
-              class="w-full bg-slate-900/90 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-slate-500"
-              required
-            />
-          </div>
-        </div>
 
-        <button 
-          type="submit" 
-          id="btnSubmit"
-          class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-2 transition active:scale-[0.99]"
-        >
-          <i data-lucide="search" class="w-4 h-4"></i>
-          <span>Cari Data di Cloud Database</span>
-        </button>
-      </form>
-
-      <!-- ALERT MESSAGE -->
-      <div id="alertBox" class="hidden mt-4 p-3.5 rounded-xl text-xs sm:text-sm flex items-center space-x-2.5"></div>
-    </div>
-
-    <!-- RESULT SECTION -->
-    <div id="resultSection" class="hidden max-w-3xl mx-auto space-y-6">
-      
-      <!-- PRINT HEADER -->
-      <div class="hidden print-only mb-6 border-b pb-4 text-slate-900">
-        <h2 class="text-xl font-bold">SLIP BUKU TABUNGAN & STATUS SPP SISWA</h2>
-        <p class="text-xs text-slate-600">Dicetak melalui Portal Resmi Wali Murid • Database Terintegrasi</p>
-      </div>
-
-      <!-- IDENTITY & BALANCE SUMMARY CARD -->
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-700">
-          <div>
-            <div class="flex items-center space-x-2.5">
-              <h3 id="resNama" class="text-xl sm:text-2xl font-black text-white">Nama Siswa</h3>
-              <span id="resBadgeStatus" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                LUNAS
-              </span>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1.5">NIS</label>
+              <input type="text" id="nisInput" placeholder="Contoh: 20260101" required
+                class="w-full border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
             </div>
-            <p class="text-sm text-slate-400 mt-1">NIS: <span id="resNis" class="font-mono text-slate-300 font-semibold">20260101</span></p>
-          </div>
-          <div class="no-print flex items-center space-x-2">
-            <button onclick="window.print()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
-              <i data-lucide="printer" class="w-4 h-4"></i>
-              <span>Cetak Slip PDF</span>
+
+            <button type="submit" id="btnSubmit"
+              class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 transition">
+              <i data-lucide="search" class="w-4 h-4"></i>
+              <span>Cari Data</span>
             </button>
+          </form>
+
+          <div id="alertBox" class="hidden mt-4 p-3 rounded-xl text-xs flex items-center gap-2"></div>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 mt-4">Terhubung ke Firebase Firestore</p>
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= HALAMAN 2: DETAIL TABUNGAN ================= -->
+  <div id="pageDetail" class="hidden min-h-screen flex flex-col">
+
+    <!-- Header detail -->
+    <header class="border-b border-slate-200 bg-white no-print">
+      <div class="max-w-3xl mx-auto px-4 h-14 flex items-center justify-between">
+        <button onclick="backToSearch()" class="flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-indigo-600 transition">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>Kembali</span>
+        </button>
+        <span class="text-xs text-slate-400">Detail Tabungan & SPP</span>
+      </div>
+    </header>
+
+    <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6">
+      <!-- Area yang dicetak -->
+      <div id="printArea">
+
+        <!-- Identitas siswa -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5 mb-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h2 id="resNama" class="text-lg font-extrabold text-slate-900">Nama Siswa</h2>
+              <p class="text-xs text-slate-500 mt-0.5">NIS: <span id="resNis" class="font-mono font-semibold text-slate-700"></span></p>
+            </div>
+            <span id="resBadgeStatus" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              LUNAS
+            </span>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
-          <!-- Total Saldo -->
-          <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-700/60">
-            <span class="text-xs font-semibold uppercase text-slate-400 block mb-1">Saldo Tabungan Siswa</span>
-            <div id="resSaldo" class="text-2xl sm:text-3xl font-extrabold text-blue-400">Rp 0</div>
-            <p class="text-xs text-slate-500 mt-1">Tersimpan dan disinkronkan di server pusat</p>
+        <!-- Ringkasan saldo & SPP -->
+        <div class="grid grid-cols-2 gap-3 mb-4">
+          <div class="bg-white border border-slate-200 rounded-2xl p-4">
+            <span class="text-[11px] font-semibold uppercase text-slate-400">Saldo Tabungan</span>
+            <div id="resSaldo" class="text-xl font-extrabold text-indigo-600 mt-1">Rp 0</div>
           </div>
+          <div class="bg-white border border-slate-200 rounded-2xl p-4">
+            <span class="text-[11px] font-semibold uppercase text-slate-400">Status SPP</span>
+            <div id="resSppStatusText" class="text-base font-bold text-emerald-600 mt-1">SPP LUNAS</div>
+            <p id="resSppDesc" class="text-[11px] text-slate-400 mt-0.5">Tidak ada tunggakan.</p>
+          </div>
+        </div>
 
-          <!-- Status SPP / Tunggakan -->
-          <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-700/60">
-            <span class="text-xs font-semibold uppercase text-slate-400 block mb-1">Status Pembayaran SPP</span>
-            <div id="resSppStatusText" class="text-xl sm:text-2xl font-bold text-emerald-400">SPP LUNAS</div>
-            <p id="resSppDesc" class="text-xs text-slate-400 mt-1">Tidak ada tunggakan pembayaran.</p>
+        <!-- Riwayat transaksi -->
+        <div class="bg-white border border-slate-200 rounded-2xl p-5">
+          <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5">
+            <i data-lucide="history" class="w-4 h-4 text-indigo-500"></i>
+            Riwayat Transaksi
+          </h3>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-[11px] uppercase text-slate-400 border-b border-slate-200">
+                <tr>
+                  <th class="py-2 pr-3">Tanggal</th>
+                  <th class="py-2 pr-3">Jenis</th>
+                  <th class="py-2 pr-3">Keterangan</th>
+                  <th class="py-2 text-right">Nominal</th>
+                </tr>
+              </thead>
+              <tbody id="resTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
           </div>
         </div>
       </div>
 
-      <!-- TRANSACTION HISTORY -->
-      <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl">
-        <h4 class="text-base font-bold text-white mb-4 flex items-center space-x-2">
-          <i data-lucide="history" class="w-5 h-5 text-indigo-400"></i>
-          <span>Riwayat Mutasi Transaksi Siswa</span>
-        </h4>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-sm text-slate-300">
-            <thead class="text-xs uppercase bg-slate-900/80 text-slate-400 border-b border-slate-700">
-              <tr>
-                <th scope="col" class="px-4 py-3 rounded-l-lg">Tanggal</th>
-                <th scope="col" class="px-4 py-3">Jenis</th>
-                <th scope="col" class="px-4 py-3">Keterangan</th>
-                <th scope="col" class="px-4 py-3 text-right rounded-r-lg">Nominal</th>
-              </tr>
-            </thead>
-            <tbody id="resTableBody" class="divide-y divide-slate-700/60 font-medium"></tbody>
-          </table>
-        </div>
+      <!-- Tombol aksi (tidak dicetak) -->
+      <div class="no-print mt-5 flex gap-3">
+        <button onclick="printSlip()"
+          class="flex-1 bg-slate-800 hover:bg-slate-700 text-white font-semibold py-2.5 rounded-xl flex items-center justify-center gap-2 transition text-sm">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Cetak Slip</span>
+        </button>
+        <button onclick="backToSearch()"
+          class="flex-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold py-2.5 rounded-xl transition text-sm">
+          Kembali
+        </button>
       </div>
-
-    </div>
-
-  </main>
+    </main>
+  </div>
 
   <!-- FOOTER -->
-  <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 no-print">
-    <div class="max-w-5xl mx-auto px-4">
-      <p>&copy; 2026 Sistem Tabungan & SPP Siswa. Hak Cipta Dilindungi.</p>
-      <p class="mt-1 text-slate-600">Terhubung langsung ke Cloud Firebase Firestore • Siap di-host di GitHub Pages</p>
-    </div>
+  <footer class="border-t border-slate-200 py-4 text-center text-[11px] text-slate-400 no-print">
+    &copy; 2026 Sistem Tabungan & SPP Siswa
   </footer>
 
-  <!-- FIREBASE MODULAR SDK v10 (ES MODULES) -->
+  <!-- FIREBASE MODULAR SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { 
-      getAuth, 
-      signInWithPopup, 
-      GoogleAuthProvider, 
-      signOut, 
-      onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { 
-      getFirestore, 
-      collectionGroup, 
-      query, 
-      where, 
-      getDocs 
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getFirestore, collectionGroup, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    // Konfigurasi Firebase dari Proyek Android Anda
     const firebaseConfig = {
       apiKey: "AIzaSyA5zFFuaUYKY_73CB18HbvWt9tUqi2sMHg",
       authDomain: "gen-lang-client-0799425064.firebaseapp.com",
@@ -229,7 +207,6 @@
 
     const FIRESTORE_DATABASE_ID = "ai-studio-android-tabungan-abca6582-2c4e-4910-bc3e-fb930bb6be7d";
 
-    // Inisialisasi Firebase App, Auth, dan Firestore
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app, FIRESTORE_DATABASE_ID);
@@ -237,35 +214,23 @@
 
     let currentUser = null;
 
-    // Monitor Status Login
     onAuthStateChanged(auth, (user) => {
       currentUser = user;
-      const pill = document.getElementById("authStatusPill");
       const btnAuthText = document.getElementById("btnAuthText");
-
-      if (user) {
-        pill.classList.remove("hidden");
-        pill.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span><span class="truncate max-w-[120px]">${user.email}</span>`;
-        btnAuthText.textContent = "Keluar";
-      } else {
-        pill.classList.remove("hidden");
-        pill.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400 mr-2 animate-pulse"></span><span>Belum Terhubung</span>`;
-        btnAuthText.textContent = "Masuk Google";
-      }
+      btnAuthText.textContent = user ? "Keluar" : "Masuk Google";
       lucide.createIcons();
     });
 
     window.handleGoogleAuth = async function() {
       if (currentUser) {
         await signOut(auth);
-        showAlert("Anda telah keluar dari akun Google.", "info");
+        showAlert("Anda telah keluar.", "info");
       } else {
         try {
           await signInWithPopup(auth, googleProvider);
-          showAlert("Berhasil terhubung dengan Google! Sekarang Anda dapat mencari data siswa.", "success");
+          showAlert("Berhasil terhubung dengan Google!", "success");
         } catch (err) {
-          console.error("Auth error:", err);
-          showAlert("Gagal menghubungkan Google: " + err.message, "error");
+          showAlert("Gagal: " + err.message, "error");
         }
       }
     };
@@ -279,53 +244,47 @@
 
     function formatDate(ms) {
       if (!ms) return "-";
-      return new Date(ms).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      });
+      return new Date(ms).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
     }
 
     function showAlert(message, type = "error") {
       const alertBox = document.getElementById("alertBox");
-      alertBox.classList.remove("hidden", "bg-red-500/10", "text-red-400", "border-red-500/20", "bg-emerald-500/10", "text-emerald-400", "border-emerald-500/20", "bg-blue-500/10", "text-blue-400", "border-blue-500/20");
-      
+      alertBox.classList.remove("hidden", "bg-red-50", "text-red-600", "border-red-200", "bg-emerald-50", "text-emerald-600", "border-emerald-200", "bg-blue-50", "text-blue-600", "border-blue-200");
+      alertBox.classList.add("border");
       if (type === "error") {
-        alertBox.classList.add("bg-red-500/10", "text-red-400", "border", "border-red-500/20");
-        alertBox.innerHTML = `<i data-lucide="alert-circle" class="w-4 h-4 flex-shrink-0"></i><span>${message}</span>`;
+        alertBox.classList.add("bg-red-50", "text-red-600", "border-red-200");
+        alertBox.innerHTML = `<i data-lucide="alert-circle" class="w-3.5 h-3.5 flex-shrink-0"></i><span>${message}</span>`;
       } else if (type === "success") {
-        alertBox.classList.add("bg-emerald-500/10", "text-emerald-400", "border", "border-emerald-500/20");
-        alertBox.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 flex-shrink-0"></i><span>${message}</span>`;
+        alertBox.classList.add("bg-emerald-50", "text-emerald-600", "border-emerald-200");
+        alertBox.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5 flex-shrink-0"></i><span>${message}</span>`;
       } else {
-        alertBox.classList.add("bg-blue-500/10", "text-blue-400", "border", "border-blue-500/20");
-        alertBox.innerHTML = `<i data-lucide="info" class="w-4 h-4 flex-shrink-0"></i><span>${message}</span>`;
+        alertBox.classList.add("bg-blue-50", "text-blue-600", "border-blue-200");
+        alertBox.innerHTML = `<i data-lucide="info" class="w-3.5 h-3.5 flex-shrink-0"></i><span>${message}</span>`;
       }
       lucide.createIcons();
     }
 
-    // Eksekusi Pencarian Data Siswa & Transaksi di Firestore
+    // Pencarian data
     window.handleSearch = async function(e) {
       e.preventDefault();
       const nama = document.getElementById("namaInput").value.trim();
       const nis = document.getElementById("nisInput").value.trim();
       const btn = document.getElementById("btnSubmit");
-      const resultSection = document.getElementById("resultSection");
-      const alertBox = document.getElementById("alertBox");
 
-      alertBox.classList.add("hidden");
+      document.getElementById("alertBox").classList.add("hidden");
 
       if (!nis && !nama) {
-        showAlert("Silakan masukkan Nomor Induk Siswa (NIS) atau Nama Siswa!", "error");
+        showAlert("Masukkan NIS atau Nama Siswa!", "error");
         return;
       }
 
       if (!currentUser) {
-        showAlert("Silakan klik 'Masuk Google' di pojok kanan atas terlebih dahulu untuk otorisasi akses data cloud!", "error");
+        showAlert("Silakan klik 'Masuk Google' terlebih dahulu.", "error");
         return;
       }
 
       btn.disabled = true;
-      btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div><span>Menghubungi Cloud Firebase...</span>`;
+      btn.innerHTML = `<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>Mencari...</span>`;
 
       try {
         let siswaQuery = query(collectionGroup(db, "siswa"), where("nis", "==", nis));
@@ -337,10 +296,9 @@
         }
 
         if (querySnapshot.empty) {
-          resultSection.classList.add("hidden");
-          showAlert(`Data siswa dengan NIS "${nis}" ${nama ? 'atau Nama "' + nama + '"' : ''} tidak ditemukan di Cloud Firestore. Pastikan data sudah tersinkronkan dari aplikasi Android.`, "error");
+          showAlert(`Data siswa dengan NIS "${nis}" tidak ditemukan.`, "error");
           btn.disabled = false;
-          btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i><span>Cari Data di Cloud Database</span>`;
+          btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i><span>Cari Data</span>`;
           lucide.createIcons();
           return;
         }
@@ -359,12 +317,10 @@
         }
 
         const transactions = [];
-        trxSnapshot.forEach(doc => {
-          transactions.push(doc.data());
-        });
-
+        trxSnapshot.forEach(doc => transactions.push(doc.data()));
         transactions.sort((a, b) => (b.tanggal || 0) - (a.tanggal || 0));
 
+        // Isi data
         document.getElementById("resNama").textContent = student.namaSiswa || nama;
         document.getElementById("resNis").textContent = student.nis || nis;
 
@@ -377,44 +333,39 @@
         resSaldo.textContent = formatRupiah(saldo);
 
         if (saldo < 0) {
-          resSaldo.className = "text-2xl sm:text-3xl font-extrabold text-red-400";
-          resBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-red-500/10 text-red-400 border border-red-500/20";
-          resBadge.textContent = "MENUNGGAK SPP";
-          resSppStatusText.className = "text-xl sm:text-2xl font-bold text-red-400";
+          resSaldo.className = "text-xl font-extrabold text-red-600 mt-1";
+          resBadge.className = "px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-50 text-red-700 border border-red-200";
+          resBadge.textContent = "MENUNGGAK";
+          resSppStatusText.className = "text-base font-bold text-red-600 mt-1";
           resSppStatusText.textContent = "TUNGGAKAN: " + formatRupiah(Math.abs(saldo));
-          resSppDesc.textContent = "Saldo tabungan minus karena potongan SPP melebihi saldo tabungan.";
+          resSppDesc.textContent = "Saldo minus karena potongan SPP melebihi saldo.";
         } else {
-          resSaldo.className = "text-2xl sm:text-3xl font-extrabold text-emerald-400";
-          resBadge.className = "px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
+          resSaldo.className = "text-xl font-extrabold text-indigo-600 mt-1";
+          resBadge.className = "px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200";
           resBadge.textContent = "LUNAS";
-          resSppStatusText.className = "text-xl sm:text-2xl font-bold text-emerald-400";
+          resSppStatusText.className = "text-base font-bold text-emerald-600 mt-1";
           resSppStatusText.textContent = "SPP LUNAS";
-          resSppDesc.textContent = "Semua kewajiban SPP terbayar dan saldo tabungan tersedia.";
+          resSppDesc.textContent = "Semua kewajiban SPP terbayar.";
         }
 
         const tbody = document.getElementById("resTableBody");
         tbody.innerHTML = "";
 
         if (transactions.length === 0) {
-          tbody.innerHTML = `<tr><td colspan="4" class="px-4 py-4 text-center text-slate-500">Belum ada riwayat transaksi yang tercatat</td></tr>`;
+          tbody.innerHTML = `<tr><td colspan="4" class="py-4 text-center text-slate-400">Belum ada riwayat transaksi</td></tr>`;
         } else {
           transactions.forEach(t => {
             const isSetor = t.jenis === "SETOR";
             const row = document.createElement("tr");
-            row.className = "hover:bg-slate-750/50 transition";
             row.innerHTML = `
-              <td class="px-4 py-3.5 text-slate-400 text-xs">${formatDate(t.tanggal)}</td>
-              <td class="px-4 py-3.5">
-                <span class="inline-block px-2 py-0.5 rounded text-[11px] font-bold ${
-                  isSetor ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"
-                }">
-                  ${t.jenis || "TRANSAKSI"}
-                </span>
+              <td class="py-2.5 pr-3 text-slate-500">${formatDate(t.tanggal)}</td>
+              <td class="py-2.5 pr-3">
+                <span class="inline-block px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                  isSetor ? "bg-emerald-50 text-emerald-700 border border-emerald-200" : "bg-red-50 text-red-700 border border-red-200"
+                }">${t.jenis || "TRANSAKSI"}</span>
               </td>
-              <td class="px-4 py-3.5 text-white text-xs sm:text-sm">${t.keterangan || "-"}</td>
-              <td class="px-4 py-3.5 text-right font-bold text-xs sm:text-sm ${
-                isSetor ? "text-emerald-400" : "text-red-400"
-              }">
+              <td class="py-2.5 pr-3 text-slate-700">${t.keterangan || "-"}</td>
+              <td class="py-2.5 text-right font-bold ${isSetor ? "text-emerald-600" : "text-red-600"}">
                 ${isSetor ? "+" : "-"}${formatRupiah(t.nominal || 0)}
               </td>
             `;
@@ -422,18 +373,36 @@
           });
         }
 
-        resultSection.classList.remove("hidden");
-        resultSection.scrollIntoView({ behavior: "smooth" });
-        showAlert("Data siswa berhasil dimuat secara langsung dari Cloud Firestore!", "success");
+        // Pindah ke halaman detail
+        showDetailPage();
 
       } catch (error) {
-        console.error("Firestore query error:", error);
-        showAlert("Gagal mengambil data dari Firebase: " + error.message, "error");
+        console.error(error);
+        showAlert("Gagal mengambil data: " + error.message, "error");
       } finally {
         btn.disabled = false;
-        btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i><span>Cari Data di Cloud Database</span>`;
+        btn.innerHTML = `<i data-lucide="search" class="w-4 h-4"></i><span>Cari Data</span>`;
         lucide.createIcons();
       }
+    };
+
+    // Navigasi halaman
+    window.showDetailPage = function() {
+      document.getElementById("pageSearch").classList.add("hidden");
+      document.getElementById("pageDetail").classList.remove("hidden");
+      window.scrollTo(0, 0);
+      lucide.createIcons();
+    };
+
+    window.backToSearch = function() {
+      document.getElementById("pageDetail").classList.add("hidden");
+      document.getElementById("pageSearch").classList.remove("hidden");
+      window.scrollTo(0, 0);
+    };
+
+    // Cetak hanya area slip
+    window.printSlip = function() {
+      window.print();
     };
 
     lucide.createIcons();
