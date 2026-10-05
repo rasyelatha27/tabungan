@@ -3,19 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portal Cek Tabungan & SPP Siswa | Untuk Orang Tua Murid</title>
-  
-  <!-- Tailwind CSS via CDN -->
+  <title>Cek Tabungan & SPP Siswa</title>
+
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Google Fonts: Plus Jakarta Sans -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
-  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  
+
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     @media print {
@@ -25,9 +20,9 @@
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between">
 
-  <!-- TOP NAVBAR -->
+  <!-- HEADER -->
   <header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50 no-print">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
       <div class="flex items-center space-x-3">
@@ -39,28 +34,24 @@
           <p class="text-xs text-slate-400">Buku Tabungan & Cek Pembayaran SPP</p>
         </div>
       </div>
-
-      <!-- Status Aktif (Bebas Login) -->
-      <div class="flex items-center space-x-2">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2 animate-pulse"></span>
-          Akses Langsung Tanpa Login
-        </span>
-      </div>
+      <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 mr-2"></span>
+        Layanan Aktif
+      </span>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
+  <!-- MAIN -->
   <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10 flex-1 w-full">
 
-    <!-- LOADING STATE DARI TAUTAN -->
+    <!-- LOADING -->
     <div id="loadingOverlay" class="hidden text-center py-16">
       <div class="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
       <h3 class="text-lg font-bold text-white mb-1">Memuat Data Siswa...</h3>
-      <p class="text-sm text-slate-400" id="loadingText">Menghubungi database sekolah untuk mengambil data tabungan & SPP.</p>
+      <p class="text-sm text-slate-400">Mohon tunggu sebentar, sedang mengambil data tabungan & SPP.</p>
     </div>
 
-    <!-- FORM PENCARIAN (HANYA MUNCUL JIKA BUKA LINK TANPA PARAMETER ?nis=...) -->
+    <!-- FORM PENCARIAN -->
     <div id="manualSearchSection" class="max-w-xl mx-auto mb-8 no-print">
       <div class="text-center mb-6">
         <span class="text-xs uppercase tracking-widest font-bold text-blue-400 mb-1.5 block">Layanan Informasi Siswa</span>
@@ -83,7 +74,7 @@
               <input 
                 type="text" 
                 id="nisInput" 
-                placeholder="Masukkan NIS Siswa (Contoh: 20260101)" 
+                placeholder="Masukkan NIS Siswa" 
                 class="w-full bg-slate-900/90 border border-slate-700 text-white rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition placeholder-slate-500"
                 required
               />
@@ -104,45 +95,42 @@
       </div>
     </div>
 
-    <!-- HASIL TAMPILAN DATA SISWA & SPP (LANGSUNG MUNCUL DARI LINK) -->
+    <!-- HASIL -->
     <div id="resultSection" class="hidden max-w-3xl mx-auto space-y-6">
-      
+
       <!-- PRINT HEADER -->
       <div class="hidden print-only mb-6 border-b pb-4 text-slate-900">
         <h2 class="text-xl font-bold">SLIP BUKU TABUNGAN & STATUS PEMBAYARAN SPP</h2>
-        <p class="text-xs text-slate-600">Dicetak melalui Portal Resmi Wali Murid • Akses Langsung</p>
+        <p class="text-xs text-slate-600">Dicetak melalui Portal Resmi Wali Murid</p>
       </div>
 
-      <!-- KARTU PROFIL & STATUS SPP UTAMA -->
+      <!-- KARTU PROFIL -->
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-700">
           <div>
             <div class="flex items-center space-x-3">
               <h3 id="resNama" class="text-xl sm:text-2xl font-black text-white">Nama Siswa</h3>
-              <!-- BADGE STATUS SPP -->
               <span id="resBadgeStatus" class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20">
                 BELUM BAYAR
               </span>
             </div>
-            <p class="text-sm text-slate-400 mt-1">NIS: <span id="resNis" class="font-mono text-slate-200 font-semibold">20260101</span></p>
+            <p class="text-sm text-slate-400 mt-1">NIS: <span id="resNis" class="font-mono text-slate-200 font-semibold">-</span></p>
           </div>
           <div class="no-print flex items-center space-x-2">
             <button onclick="window.print()" class="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
               <i data-lucide="printer" class="w-4 h-4"></i>
-              <span>Cetak Slip PDF</span>
+              <span>Cetak Slip</span>
             </button>
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
-          <!-- 1. Saldo Tabungan -->
           <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-700/60">
             <span class="text-xs font-semibold uppercase text-slate-400 block mb-1">Saldo Tabungan Siswa</span>
             <div id="resSaldo" class="text-2xl sm:text-3xl font-extrabold text-blue-400">Rp 0</div>
             <p id="resSaldoKeterangan" class="text-xs text-slate-400 mt-1">Tersimpan aman di buku tabungan.</p>
           </div>
 
-          <!-- 2. Status SPP Bulan Berjalan -->
           <div class="bg-slate-900/80 rounded-xl p-5 border border-slate-700/60">
             <span class="text-xs font-semibold uppercase text-slate-400 block mb-1">Status SPP Siswa</span>
             <div id="resSppStatusText" class="text-xl sm:text-2xl font-black text-red-400">BELUM BAYAR</div>
@@ -151,7 +139,7 @@
         </div>
       </div>
 
-      <!-- RIWAYAT MUTASI & TRANSAKSI -->
+      <!-- RIWAYAT -->
       <div class="bg-slate-800 border border-slate-700 rounded-2xl p-6 sm:p-8 shadow-xl">
         <h4 class="text-base font-bold text-white mb-4 flex items-center space-x-2">
           <i data-lucide="history" class="w-5 h-5 text-indigo-400"></i>
@@ -162,10 +150,10 @@
           <table class="w-full text-left text-sm text-slate-300">
             <thead class="text-xs uppercase bg-slate-900/80 text-slate-400 border-b border-slate-700">
               <tr>
-                <th scope="col" class="px-4 py-3 rounded-l-lg">Tanggal</th>
-                <th scope="col" class="px-4 py-3">Tipe</th>
-                <th scope="col" class="px-4 py-3">Keterangan</th>
-                <th scope="col" class="px-4 py-3 text-right rounded-r-lg">Nominal</th>
+                <th class="px-4 py-3 rounded-l-lg">Tanggal</th>
+                <th class="px-4 py-3">Tipe</th>
+                <th class="px-4 py-3">Keterangan</th>
+                <th class="px-4 py-3 text-right rounded-r-lg">Nominal</th>
               </tr>
             </thead>
             <tbody id="resTableBody" class="divide-y divide-slate-700/60 font-medium"></tbody>
@@ -173,7 +161,6 @@
         </div>
       </div>
 
-      <!-- LINK BANTUAN KEMBALI KE PENCARIAN -->
       <div class="text-center no-print pt-2">
         <button onclick="showSearchAgain()" class="text-xs font-semibold text-slate-400 hover:text-white transition underline">
           Cari Siswa Lain
@@ -188,20 +175,13 @@
   <footer class="border-t border-slate-800 py-6 text-center text-xs text-slate-500 no-print">
     <div class="max-w-5xl mx-auto px-4">
       <p>&copy; 2026 Sistem Tabungan & SPP Siswa. Hak Cipta Dilindungi.</p>
-      <p class="mt-1 text-slate-600">Portal Informasi Orang Tua Siswa • Tanpa Perlu Login</p>
     </div>
   </footer>
 
-  <!-- SCRIPT LOGIC FIREBASE & DATA ENGINE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { 
-      getFirestore, 
-      collectionGroup, 
-      getDocs 
-    } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { getFirestore, collectionGroup, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    // Konfigurasi Firebase dari Proyek Android
     const firebaseConfig = {
       apiKey: "AIzaSyA5zFFuaUYKY_73CB18HbvWt9tUqi2sMHg",
       authDomain: "gen-lang-client-0799425064.firebaseapp.com",
@@ -218,10 +198,9 @@
       const app = initializeApp(firebaseConfig);
       db = getFirestore(app, FIRESTORE_DATABASE_ID);
     } catch (e) {
-      console.warn("Firebase init:", e);
+      console.warn(e);
     }
 
-    // Format Rupiah
     function formatRupiah(number) {
       const isNeg = number < 0;
       const absVal = Math.abs(number);
@@ -231,11 +210,7 @@
 
     function formatDate(ms) {
       if (!ms) return "-";
-      return new Date(ms).toLocaleDateString("id-ID", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric"
-      });
+      return new Date(ms).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
     }
 
     function showAlert(message, type = "error") {
@@ -257,7 +232,6 @@
       document.getElementById("resultSection").classList.add("hidden");
     };
 
-    // Fungsi Render Tampilan Hasil
     function renderStudentResult(student, transactions) {
       document.getElementById("loadingOverlay").classList.add("hidden");
       document.getElementById("manualSearchSection").classList.add("hidden");
@@ -274,13 +248,10 @@
       const saldo = student.saldo || 0;
       resSaldo.textContent = formatRupiah(saldo);
 
-      // Hitung Transaksi SPP
       const sppTransactions = transactions.filter(t => t.jenis === "POTONG_SPP");
       const totalSppPaid = sppTransactions.reduce((acc, curr) => acc + (curr.nominal || 0), 0);
 
-      // Logika Status SPP yang JELAS & AKURAT
       if (sppTransactions.length === 0) {
-        // 1. BELUM BAYAR SAMA SEKALI
         resBadge.className = "px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20";
         resBadge.textContent = "BELUM BAYAR";
         resSppStatusText.className = "text-xl sm:text-2xl font-black text-red-400";
@@ -289,7 +260,6 @@
         resSaldo.className = "text-2xl sm:text-3xl font-extrabold text-blue-400";
         resSaldoKeterangan.textContent = "Saldo tabungan aktif.";
       } else if (saldo < 0) {
-        // 2. MENUNGGAK (Saldo minus karena potongan melebihi tabungan)
         resBadge.className = "px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20";
         resBadge.textContent = "TUNGGAKAN SPP";
         resSppStatusText.className = "text-xl sm:text-2xl font-black text-red-400";
@@ -298,7 +268,6 @@
         resSaldo.className = "text-2xl sm:text-3xl font-extrabold text-red-400";
         resSaldoKeterangan.textContent = "Perhatian: Saldo tabungan minus (menunggak SPP).";
       } else {
-        // Cek apakah ada cicilan
         const isCicilan = sppTransactions.some(t => (t.keterangan || "").toLowerCase().includes("cicil"));
         if (isCicilan) {
           resBadge.className = "px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20";
@@ -309,7 +278,6 @@
           resSaldo.className = "text-2xl sm:text-3xl font-extrabold text-emerald-400";
           resSaldoKeterangan.textContent = "Saldo tabungan tersedia dan aman.";
         } else {
-          // LUNAS
           resBadge.className = "px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20";
           resBadge.textContent = "LUNAS";
           resSppStatusText.className = "text-xl sm:text-2xl font-black text-emerald-400";
@@ -320,7 +288,6 @@
         }
       }
 
-      // Render Tabel Mutasi
       const tbody = document.getElementById("resTableBody");
       tbody.innerHTML = "";
 
@@ -355,7 +322,6 @@
       lucide.createIcons();
     }
 
-    // Fungsi Pencarian Siswa Utama (Bisa dipanggil otomatis dari URL tanpa tekan tombol)
     async function searchStudentByNis(targetNis) {
       if (!targetNis) return;
       const cleanNis = targetNis.toString().trim();
@@ -368,7 +334,6 @@
         let foundStudent = null;
         let allTransactions = [];
 
-        // 1. Ambil dari Firestore Cloud Database
         if (db) {
           const siswaSnap = await getDocs(collectionGroup(db, "siswa"));
           siswaSnap.forEach(doc => {
@@ -395,22 +360,20 @@
           }
         }
 
-        // 2. Jika ketemu di Firestore, langsung tampilkan!
         if (foundStudent) {
           renderStudentResult(foundStudent, allTransactions);
           return;
         }
 
-        // 3. Jika belum ada di Firestore (misal belum sinkron atau demo lokal)
         document.getElementById("loadingOverlay").classList.add("hidden");
         document.getElementById("manualSearchSection").classList.remove("hidden");
-        showAlert(`Siswa dengan NIS "${cleanNis}" belum ditemukan di server cloud. Pastikan operator sekolah telah menekan tombol "Sinkronisasi" di aplikasi Android.`, "error");
+        showAlert(`Data siswa dengan NIS "${cleanNis}" belum tersedia. Silakan hubungi pihak sekolah untuk memastikan data telah diperbarui.`, "error");
 
       } catch (err) {
-        console.error("Fetch error:", err);
+        console.error(err);
         document.getElementById("loadingOverlay").classList.add("hidden");
         document.getElementById("manualSearchSection").classList.remove("hidden");
-        showAlert("Terjadi kendala saat membaca database: " + err.message, "error");
+        showAlert("Terjadi kendala saat mengambil data. Silakan coba beberapa saat lagi.", "error");
       }
     }
 
@@ -420,18 +383,14 @@
       searchStudentByNis(nis);
     };
 
-    // OTOMATIS EKSEKUSI LANGSUNG JIKA DIBUKA LEWAT LINK (?nis=...)
     window.addEventListener("DOMContentLoaded", () => {
       lucide.createIcons();
       const urlParams = new URLSearchParams(window.location.search);
       const nisFromUrl = urlParams.get("nis");
-
       if (nisFromUrl) {
-        // Sembunyikan form seketika dan langsung cari otomatis
         searchStudentByNis(nisFromUrl);
       }
     });
-
   </script>
 </body>
 </html>
